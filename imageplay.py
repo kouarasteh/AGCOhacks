@@ -3,6 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from auto_canny import auto_canny
+
+def boost_green(inputImage, booster):
+    image = inputImage
+    for i in range(len(image)):
+        for j in range(len(image[0])):
+            if (np.argmax(image[i][j]) == 1):
+                image[i][j][1] *= booster
+    return image
 #load in dataset
 imageset = []
 cannys = []
@@ -10,11 +18,10 @@ for file in os.listdir("dataset"):
     if file.endswith(".png"):
         imageset.append(cv2.imread(os.path.join("dataset",file)))
 
-for im in imageset:
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) # convert to grayscale
-    blur = cv2.blur(gray, (3, 3)) # blur the image
-    canny = auto_canny(blur)
-    ret, thresh = cv2.threshold(canny, 50, 255, cv2.THRESH_BINARY)
+for myIm in imageset:
+    im = boost_green(myIm,2)
+    blur = cv2.blur(im, (3, 3)) # blur the image
+    thresh = auto_canny(blur)
     im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,9))
