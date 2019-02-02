@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from auto_canny import auto_canny
 #load in dataset
 imageset = []
 cannys = []
@@ -10,36 +11,57 @@ for file in os.listdir("dataset"):
         imageset.append(cv2.imread(os.path.join("dataset",file)))
 
 for im in imageset:
-    can = cv2.Canny(im,100,200)
+    blurd = cv2.GaussianBlur(im, (0, 0), 3)
+    edgyIm = cv2.addWeighted(im, 1.5, blurd,-0.5, 0)
+
+    #unsharpened original image
+    origcan = cv2.Canny(im,80,200)
+
+    #sharpened image
+    can = cv2.Canny(edgyIm,80,200)
+
     cannys.append(can)
-    print(can)
+    #canny output for original image, converted to RED
+    origcan3 = cv2.cvtColor(origcan,cv2.COLOR_GRAY2RGB)
+    origcan3[np.where((origcan3==[255,255,255]).all(axis=2))] = [0,0,255]
+
+    #canny output for sharpened image, converted to RED
     can3 = cv2.cvtColor(can,cv2.COLOR_GRAY2RGB)
+    can3[np.where((can3==[255,255,255]).all(axis=2))] = [0,0,255]
+
+    #autocanny output for original, unsharpened image, converted to RED
+    autocanorig = cv2.cvtColor(auto_canny(im),cv2.COLOR_GRAY2RGB)
+    autocanorig[np.where((autocanorig==[255,255,255]).all(axis=2))] = [0,0,255]
+
+    #autocanny output for sharpened,edgy image, converted to RED
+    autocan = cv2.cvtColor(auto_canny(edgyIm),cv2.COLOR_GRAY2RGB)
+    autocan[np.where((autocan==[255,255,255]).all(axis=2))] = [0,0,255]
+
+    # newIm = cv2.add(im,origcan3)
+    # edgynewIm = cv2.add(im,can3)
+    # AnewIm = cv2.add(im,autocanorig)
+    # AedgynewIm = cv2.add(im,autocan)
+
+    newIm = origcan3
+    edgynewIm = can3
+    AnewIm = autocanorig
+    AedgynewIm = autocan
+    #
+    # cnts = cv2.findContours(can, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # print(len(cnts))
+    # for i, cnt in enumerate(cnts):
+    #     cnts[i] = cv2.convexHull(cnts[i])
+    # cv2.drawContours(origcan3,cnts, 0, (0,255,0), 3)
+    #
+    # newIm = origcan3
+    # edgynewIm = can3
+    # AnewIm = autocanorig
+    # AedgynewIm = autocan
+
     # print(im.shape)
     # print(can.shape)
-    # stack = np.vstack((im,can3))
-    # cv2.imshow('Image and Canny',can)
-    # cv2.waitKey()
-    # cv2.destroyAllWindows()
-
-
-# image = cv2.imread('pinocchio.png')
-# # I just resized the image to a quarter of its original size
-# image = cv2.resize(image, (0, 0), None, .25, .25)
-#
-# grey = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-# # Make the grey scale image have three channels
-# grey_3_channel = cv2.cvtColor(grey, cv2.COLOR_GRAY2BGR)
-#
-# numpy_vertical = np.vstack((image, grey_3_channel))
-# numpy_horizontal = np.hstack((image, grey_3_channel))
-#
-# numpy_vertical_concat = np.concatenate((image, grey_3_channel), axis=0)
-# numpy_horizontal_concat = np.concatenate((image, grey_3_channel), axis=1)
-#
-# cv2.imshow('Main', image)
-# cv2.imshow('Numpy Vertical', numpy_vertical)
-# cv2.imshow('Numpy Horizontal', numpy_horizontal)
-# cv2.imshow('Numpy Vertical Concat', numpy_vertical_concat)
-# cv2.imshow('Numpy Horizontal Concat', numpy_horizontal_concat)
-#
-# cv2.waitKey()
+    stack = np.hstack((np.vstack((cv2.resize(newIm, (0,0), fx=0.5, fy=0.5),cv2.resize(edgynewIm, (0,0), fx=0.5, fy=0.5)) ),
+                    np.vstack((cv2.resize(AnewIm, (0,0), fx=0.5, fy=0.5),cv2.resize(AedgynewIm, (0,0), fx=0.5, fy=0.5)) )))
+    cv2.imshow('Image and Canny',stack)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
