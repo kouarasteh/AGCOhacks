@@ -12,12 +12,14 @@ for file in os.listdir("dataset"):
 for im in imageset:
     can = cv2.Canny(im,100,200)
     cannys.append(can)
-    print(im.shape)
-    print(can.shape)
-    stack = np.vstack((im,can))
-    cv2.imshow('Image and Canny',stack)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
+    print(can)
+    can3 = cv2.cvtColor(can,cv2.COLOR_GRAY2RGB)
+    # print(im.shape)
+    # print(can.shape)
+    # stack = np.vstack((im,can3))
+    # cv2.imshow('Image and Canny',can)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
 
 
 # image = cv2.imread('pinocchio.png')
