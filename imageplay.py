@@ -22,24 +22,41 @@ for myIm in imageset:
     im = boost_green(myIm,2)
     blur = cv2.blur(im, (3, 3)) # blur the image
     thresh = auto_canny(blur)
-    im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,9))
     dilated = cv2.dilate(thresh, kernel)
-    _, cnts, hierarchy2 = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, cnts, hierarchy1 = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         # create hull array for convex hull points
 
 
-    drawing2 = np.zeros((thresh.shape[0], thresh.shape[1], 3), np.uint8)
+    drawing1 = np.zeros((thresh.shape[0], thresh.shape[1], 3), np.uint8)
 
     # draw contours and hull points
     for i in range(len(cnts)):
         color_contours = (0, 0, 255) # green - color for contours
         color = (255, 0, 0) # blue - color for convex hull
         # draw ith contour
-        cv2.drawContours(drawing2, cnts, i, color_contours, -1, 8, hierarchy2)
+        cv2.drawContours(drawing1, cnts, i, color_contours, -1, 8, hierarchy1)
 
-    cv2.imshow('origimage',cv2.add(im,drawing2))
+    drawing1 = cv2.cvtColor(drawing1,cv2.COLOR_RGB2GRAY)
+    drawing1 = cv2.threshold(drawing1,0,255,cv2.THRESH_BINARY)
+    kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,9))
+    dilated2 = cv2.dilate(drawing1, kernel)
+    _, cnts2, hierarchy2 = cv2.findContours(dilated2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # create hull array for convex hull points
+
+
+    drawing2 = np.zeros((thresh.shape[0], thresh.shape[1], 3), np.uint8)
+
+    # draw contours and hull points
+    for i in range(len(cnts2)):
+        color_contours = (0, 255, 0) # green - color for contours
+        color = (255, 0, 0) # blue - color for convex hull
+        # draw ith contour
+        cv2.drawContours(drawing2, cnts2, i, color_contours, 1, 8, hierarchy2)
+
+    cv2.imshow('justdrawing',dilated2)
+    #cv2.imshow('origimage',cv2.add(im,drawing2))
     # blurd = cv2.GaussianBlur(im, (0, 0), 3)
     # edgyIm = cv2.addWeighted(im, 1.5, blurd,-0.5, 0)
     #
